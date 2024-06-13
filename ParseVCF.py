@@ -5,7 +5,12 @@
 # Description: This program should parse an unphased VCF file and output 8 files (4 per scenario)
 # In one scenario, A7 is healthy, in the other, A7 and A1 are healthy
 # The four files will be the segregated set, non-segregated set, a missing set, and a family-missing set
-# Notes: unfinished
+#
+# Notes:
+#   1) quotechar error: Project Issue #6.  Reference: https://github.com/dridk/PyVCF3/issues/6
+#   quotechar is unused when quoting=csv.QUOTE_NONE is used. To remedy, delete passing quotechar when invoking csv.writer
+#   line 776 of parser.py (quotechar = "")
+#
 
 import vcf
 import sys, os, re, random, string
@@ -36,11 +41,18 @@ def check_missing(samples_GT):
 def main():
     vcfname = 'example.vcf' 
     healthy_samples = [ 'A1','A7' ]
+    outputvcfname = vcfname.replace('.vcf', '')
+    outputvcfname += '_healthy_' + '_'.join(healthy_samples) + '_'
+    missingvcfname = outputvcfname + 'missing.vcf'
 
     header_filename = '.ParseVCF_header-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
     grab_header_from_vcf(vcfname, header_filename)
     vcf_reader = vcf.Reader(open(vcfname,'r'))
-#    vcf_writer = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+    vcf_writer1 = vcf.Writer(open('test.vcf', 'w'), vcf_reader)
+ #   vcf_writer2 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+#    vcf_writer3 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+ #   vcf_writer4 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+    sys.exit()
 
     for record in vcf_reader:
         samples_dict = {}
