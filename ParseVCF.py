@@ -47,14 +47,12 @@ def main():
     # header_filename = '.ParseVCF_header-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
     # grab_header_from_vcf(vcfname, header_filename)
     vcf_reader = vcf.Reader(open(vcfname,'r'))
-
-    
     vcf_writer1 = vcf.Writer(open(outputvcfname + 'missing.vcf', 'w'), vcf_reader)
-    vcf_writer1.close()
-    #vcf_writer2 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
-    #vcf_writer3 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
-    #vcf_writer4 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
-    sys.exit()
+    vcf_writer2 = vcf.Writer(open(outputvcfname + 'familymissing.vcf', 'w'), vcf_reader)
+    vcf_writer3 = vcf.Writer(open(outputvcfname + 'segregated.vcf', 'w'), vcf_reader)
+    vcf_writer4 = vcf.Writer(open(outputvcfname + 'nonsegregated.vcf', 'w'), vcf_reader)
+
+
 
     for record in vcf_reader:
         samples_dict = {}
@@ -63,8 +61,14 @@ def main():
         unhealthy_samples_GT = {key: value for key, value in samples_dict.items() if key not in healthy_samples}
         healthy_samples_GT = {key: value for key, value in samples_dict.items() if key in healthy_samples}
         ismissing = check_missing(healthy_samples_GT)
-        print(healthy_samples_GT)
-        print(ismissing)
+        isfamilymissing = check_missing(unhealthy_samples_GT)
+
+        if ismissing:
+            vcf_writer1.write_record(record)
+        elif isfamilymissing:
+            vcf_writer2.write_record(record)
+        
+
 
 
 # do the criteria, if else
@@ -75,8 +79,11 @@ def main():
 
 
 
-
-    cleanup_tmpfiles(header_filename)
+    vcf_writer1.close()
+    vcf_writer2.close()
+    vcf_writer3.close()
+    vcf_writer4.close()
+    #cleanup_tmpfiles(header_filename)
     sys.exit()
 
 
