@@ -43,15 +43,17 @@ def main():
     healthy_samples = [ 'A1','A7' ]
     outputvcfname = vcfname.replace('.vcf', '')
     outputvcfname += '_healthy_' + '_'.join(healthy_samples) + '_'
-    missingvcfname = outputvcfname + 'missing.vcf'
-
-    header_filename = '.ParseVCF_header-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
-    grab_header_from_vcf(vcfname, header_filename)
+   
+    # header_filename = '.ParseVCF_header-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
+    # grab_header_from_vcf(vcfname, header_filename)
     vcf_reader = vcf.Reader(open(vcfname,'r'))
-    vcf_writer1 = vcf.Writer(open('test.vcf', 'w'), vcf_reader)
- #   vcf_writer2 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
-#    vcf_writer3 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
- #   vcf_writer4 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+
+    
+    vcf_writer1 = vcf.Writer(open(outputvcfname + 'missing.vcf', 'w'), vcf_reader)
+    vcf_writer1.close()
+    #vcf_writer2 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+    #vcf_writer3 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+    #vcf_writer4 = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
     sys.exit()
 
     for record in vcf_reader:
