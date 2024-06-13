@@ -8,9 +8,7 @@
 # Notes: unfinished
 
 import vcf
-import sys, os
-import random
-import string
+import sys, os, re, random, string
 
 def grab_header_from_vcf(vcfname, header_filename):
     prefix = "##"
@@ -26,16 +24,34 @@ def grab_header_from_vcf(vcfname, header_filename):
 def cleanup_tmpfiles(header_filename):
     os.remove(header_filename)
 
+def check_missing(samples_GT):
+    # for polyploid organisms or unique cases
+    # missingpattern = re.compile(r'^\.([/|]\.){1,2}$')
+    missingpattern = re.compile(r'^\.[/|]\.$') 
+    for GT in samples_GT.values():
+        if not missingpattern.search(GT):
+            return False
+    return True
+
 def main():
-    vcfname = 'example.vcf'  
+    vcfname = 'example.vcf' 
+    healthy_samples = [ 'A1','A7' ]
+
     header_filename = '.ParseVCF_header-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
     grab_header_from_vcf(vcfname, header_filename)
-    vcf_reader = vcf.Reader(open('example.vcf','r'))
+    vcf_reader = vcf.Reader(open(vcfname,'r'))
+#    vcf_writer = vcf.Writer(open('/dev/null', 'w'), vcf_reader)
+
     for record in vcf_reader:
         samples_dict = {}
         for sample in record.samples:
             samples_dict[sample.sample] = sample['GT']
-        
+        unhealthy_samples_GT = {key: value for key, value in samples_dict.items() if key not in healthy_samples}
+        healthy_samples_GT = {key: value for key, value in samples_dict.items() if key in healthy_samples}
+        ismissing = check_missing(healthy_samples_GT)
+        print(healthy_samples_GT)
+        print(ismissing)
+
 
 # do the criteria, if else
 
