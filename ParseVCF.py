@@ -38,6 +38,11 @@ def check_missing(samples_GT):
             return False
     return True
 
+def check_segregated(healthy_samples_GT, unhealthy_samples_GT):
+    healthy_GT_values = set(healthy_samples_GT.values())
+    unhealthy_GT_values = set(unhealthy_samples_GT.values())
+    return healthy_GT_values.isdisjoint(unhealthy_GT_values)
+
 def main():
     vcfname = 'example.vcf' 
     healthy_samples = [ 'A1','A7' ]
@@ -52,8 +57,6 @@ def main():
     vcf_writer3 = vcf.Writer(open(outputvcfname + 'segregated.vcf', 'w'), vcf_reader)
     vcf_writer4 = vcf.Writer(open(outputvcfname + 'nonsegregated.vcf', 'w'), vcf_reader)
 
-
-
     for record in vcf_reader:
         samples_dict = {}
         for sample in record.samples:
@@ -62,22 +65,16 @@ def main():
         healthy_samples_GT = {key: value for key, value in samples_dict.items() if key in healthy_samples}
         ismissing = check_missing(healthy_samples_GT)
         isfamilymissing = check_missing(unhealthy_samples_GT)
+        issegregated = check_segregated(healthy_samples_GT, unhealthy_samples_GT)
 
         if ismissing:
             vcf_writer1.write_record(record)
         elif isfamilymissing:
             vcf_writer2.write_record(record)
-        
-
-
-
-# do the criteria, if else
-
-# within this loop block, write the 4 output 
-
-
-
-
+        elif issegregated:
+            vcf_writer3.write_record(record)
+        else:
+            vcf_writer4.write_record(record)
 
     vcf_writer1.close()
     vcf_writer2.close()
