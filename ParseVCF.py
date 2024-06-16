@@ -29,6 +29,9 @@ def check_segregated(healthy_samples_GT, unhealthy_samples_GT):
     unhealthy_GT_values = set(unhealthy_samples_GT.values())
     return healthy_GT_values.isdisjoint(unhealthy_GT_values)
 
+def pedigree_healthy(pedigree_file):
+    sys.exit(6)
+
 def main(args):
     if os.path.exists(args.file):
         vcfname = args.file
@@ -36,7 +39,14 @@ def main(args):
         print(f"The file '{args.file}' does not exist.")
         sys.exit(10)
 
-    healthy_samples = [ 'A1','A7' ]
+    if args.healthy:
+        healthy_samples = args.healthy.split(',')
+    elif os.path.exists(args.pedigree):
+        healthy_samples = pedigree_healthy(args.pedigree)
+    else:
+        print(f"Must specify --healthy or --pedigree switch")
+        sys.exit(11)
+
     outputvcfname = vcfname.replace('.vcf', '')
     outputvcfname += '_healthy_' + '_'.join(healthy_samples) + '_'
    
@@ -69,10 +79,12 @@ def main(args):
     vcf_writer2.close()
     vcf_writer3.close()
     vcf_writer4.close()
-    sys.exit()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", type = str, required = True, help = "specify VCF file to be parsed")
+    parser.add_argument("--healthy", type = str, required = False, help = "specify healthy samples (delimited by ,), takes precedence over --pedigree switch")
+    parser.add_argument("--pedigree", type = str, required = False, help = "specify pedigree file name (.ped or .fam), unless healthy samples listed")
     args = parser.parse_args()
     main(args)
+    sys.exit()
