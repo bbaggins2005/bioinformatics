@@ -13,21 +13,7 @@
 #
 
 import vcf
-import sys, os, re, random, string
-
-def grab_header_from_vcf(vcfname, header_filename):
-    prefix = "##"
-    with open(vcfname, 'r') as file:
-        with open(header_filename, 'w') as header_file:
-            for line in file:
-                if line.startswith(prefix):
-                    header_file.write(line)
-            colname_line = '#CHROM\tPOS\tREF\tALT\tA1\tA2\tA3\tA4\tA5\tA6\tA7\n'
-            #work on
-            header_file.write(colname_line)
-
-def cleanup_tmpfiles(header_filename):
-    os.remove(header_filename)
+import sys, os, re, argparse
 
 def check_missing(samples_GT):
     # for polyploid organisms or unique cases
@@ -43,14 +29,27 @@ def check_segregated(healthy_samples_GT, unhealthy_samples_GT):
     unhealthy_GT_values = set(unhealthy_samples_GT.values())
     return healthy_GT_values.isdisjoint(unhealthy_GT_values)
 
-def main():
-    vcfname = 'example.vcf' 
-    healthy_samples = [ 'A1','A7' ]
+def pedigree_healthy(pedigree_file):
+    sys.exit(6)
+
+def main(args):
+    if os.path.exists(args.file):
+        vcfname = args.file
+    else:
+        print(f"The file '{args.file}' does not exist.")
+        sys.exit(10)
+
+    if args.healthy:
+        healthy_samples = args.healthy.split(',')
+    elif os.path.exists(args.pedigree):
+        healthy_samples = pedigree_healthy(args.pedigree)
+    else:
+        print(f"Must specify --healthy or --pedigree switch")
+        sys.exit(11)
+
     outputvcfname = vcfname.replace('.vcf', '')
     outputvcfname += '_healthy_' + '_'.join(healthy_samples) + '_'
    
-    # header_filename = '.ParseVCF_header-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
-    # grab_header_from_vcf(vcfname, header_filename)
     vcf_reader = vcf.Reader(open(vcfname,'r'))
     vcf_writer1 = vcf.Writer(open(outputvcfname + 'missing.vcf', 'w'), vcf_reader)
     vcf_writer2 = vcf.Writer(open(outputvcfname + 'familymissing.vcf', 'w'), vcf_reader)
@@ -80,8 +79,12 @@ def main():
     vcf_writer2.close()
     vcf_writer3.close()
     vcf_writer4.close()
-    #cleanup_tmpfiles(header_filename)
-    sys.exit()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--file", type = str, required = True, help = "specify VCF file to be parsed")
+    parser.add_argument("--healthy", type = str, required = False, help = "specify healthy samples (delimited by ,), takes precedence over --pedigree switch")
+    parser.add_argument("--pedigree", type = str, required = False, help = "specify pedigree file name (.ped or .fam), unless healthy samples listed")
+    args = parser.parse_args()
+    main(args)
+    sys.exit()
