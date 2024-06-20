@@ -30,7 +30,16 @@ def check_segregated(healthy_samples_GT, unhealthy_samples_GT):
     return healthy_GT_values.isdisjoint(unhealthy_GT_values)
 
 def pedigree_healthy(pedigree_file):
-    sys.exit(6)
+    unaffected = []
+    with open(pedigree_file, 'r') as file:
+        lines = file.readlines()
+    for line in lines:
+        if line.startswith('#'):
+            continue
+        fields = line.split()
+        if fields[5] == '1':
+            unaffected.append(fields[1])
+    return unaffected
 
 def main(args):
     if os.path.exists(args.file):
