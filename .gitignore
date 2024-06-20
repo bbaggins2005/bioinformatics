@@ -4,6 +4,10 @@
 # Variant Cell Format
 *.vcf
 
+# Pedigree File
+*.ped
+*.fam
+
 # Visual Studio Code
 .vscode/*
 !.vscode/settings.json
