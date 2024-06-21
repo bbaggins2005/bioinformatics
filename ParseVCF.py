@@ -5,14 +5,18 @@
 # Description: This program should parse an unphased VCF file and output 8 files (4 per scenario)
 # The four files will be the segregated set, non-segregated set, a missing set, and a family-missing set
 #
-# Notes:
-#   1) quotechar error: Project Issue #6.  Reference: https://github.com/dridk/PyVCF3/issues/6
-#   quotechar is unused when quoting=csv.QUOTE_NONE is used. To remedy, delete passing quotechar when invoking csv.writer
-#   line 776 of parser.py (quotechar = "")
-#
+'''
+Notes:
+1) quotechar error: Project Issue #6.  Reference: https://github.com/dridk/PyVCF3/issues/6
+quotechar is unused when quoting=csv.QUOTE_NONE is used. To remedy, delete passing quotechar when invoking csv.writer
+line 776 of parser.py (quotechar = "")
+'''
 
 import vcf
-import sys, os, re, argparse
+import sys
+import os
+import re
+import argparse
 
 def check_missing(samples_GT):
     # for polyploid organisms or unique cases
@@ -52,7 +56,7 @@ def main(args):
     elif os.path.exists(args.pedigree):
         unaffected_samples = pedigree_unaffected(args.pedigree)
     else:
-        print(f"Must specify --unaffected or --pedigree switch")
+        print("Must specify --unaffected or --pedigree switch")
         sys.exit(11)
 
     outputvcfname = vcfname.replace('.vcf', '')
