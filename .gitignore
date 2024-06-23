@@ -1,6 +1,9 @@
 .venv/
 .history/
 
+# Temporary
+tmp/
+
 # Config Files
 *.ini
 
