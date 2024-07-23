@@ -27,9 +27,16 @@ def check_missing(samples_GT):
             return False
     return True
 
+def unordered_GT(samples_GT_dict):
+    samples_GT_set = set()
+    for value in samples_GT_dict.values():
+        temp_set = frozenset(value.replace('|', '/').split('/'))
+        samples_GT_set.add(temp_set)
+    return samples_GT_set
+
 def check_segregated(unaffected_samples_GT, affected_samples_GT):
-    unaffected_GT_values = set(unaffected_samples_GT.values())
-    affected_GT_values = set(affected_samples_GT.values())
+    unaffected_GT_values = unordered_GT(unaffected_samples_GT)
+    affected_GT_values = unordered_GT(affected_samples_GT)
     return unaffected_GT_values.isdisjoint(affected_GT_values)
 
 def pedigree_ifaffected(phenotype, pedigree_file):
