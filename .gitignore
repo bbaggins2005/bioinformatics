@@ -14,6 +14,26 @@ tmp/
 *.ped
 *.fam
 
+# Tabix Index Files
+*.tbi
+
+# Bed Files
+*.bed
+
+# Compressed Files
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Spreadsheet Files
+*.csv
+*.tsv
+*.xls
+*.xlsx
+
 # Visual Studio Code
 .vscode/*
 !.vscode/settings.json
@@ -21,6 +41,18 @@ tmp/
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
+
+# Library Modules
+lib/build/
+lib/dist/
+lib/*.egg-info/
+
+# Wheel Package
+*.whl
+
+# Python Files
+*.py[cod]
+__pycache__/
 
 # Built Visual Studio Code Extensions
 *.vsix
