@@ -2,7 +2,7 @@
 A repository for my bioinformatics tools
 <br><br>
 ## Description
-An in-depth paragraph about your project and overview of use.
+This Github repository was created to store scripts and programs that I have written to aid my bioinformatics research.
 <br><br>
 ## Getting Started
 ### Dependencies
