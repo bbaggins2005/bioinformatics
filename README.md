@@ -5,15 +5,42 @@ A repository for my bioinformatics tools
 An in-depth paragraph about your project and overview of use.
 <br><br>
 ## Getting Started
-<br><br>
 ### Dependencies
+* git
 * Python 3
 * pip3 ([View requirements.txt](https://github.com/bbaggins2005/bioinformatics/blob/main/requirements.txt))
 <br><br>
-### Installing
+### Installation Procedure
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+#### 1) Clone Bioinformatics from github
+```bash
+git clone https://github.com/bbaggins2005/bioinformatics.git
+```
+
+#### 2) Create Python virtual environment
+```bash
+python -m venv /path/to/new/virtual/environment/.venv
+```
+
+#### 3) Install required Python packages
+```bash
+cd /path/to/new/virtual/environment 
+pip install -r  requirements.txt
+```
+
+#### 4) Upgrade PyVCF3
+```bash
+pip install --upgrade PyVCF3
+```
+
+#### 5) List installed packages, including editables.
+```bash
+pip list
+```
+
+#### 6) Remediate [PyVCF3 Issue #6](https://github.com/dridk/PyVCF3/issues/6)
+* click [here](https://github.com/bbaggins2005/bioinformatics/blob/main/docs/PyVCF3_Issue6.md)
+
 <br><br>
 ## Authors and Contributors
 Reece Chae
