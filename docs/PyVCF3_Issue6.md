@@ -7,12 +7,12 @@ When using PyVCF3 on newer versions of Python 3 (Python >= 3.11), users may get 
 
 ## Methods
 <!--ts-->
-   * [Fixing with Linux](#Linux)
-   * [Fixing with Windows](#Windows)
+   * [Fixing with Linux Bash](#Linux-Bash)
+   * [Fixing with Windows PowerShell](#Windows-PowerShell)
    * [Fixing with Github](#Github)
 <!--te-->
 <br></br>
-### Linux
+### Linux Bash
 #### Grab version of PyVCF3
 ``` bash
 PyVCF_version=$(pip show PyVCF3 | awk '/^Version:/{print $2}')
@@ -23,7 +23,7 @@ PyVCF_lib=$(pip show PyVCF3 | awk '/^Location:/{print $2}')
 [ "${PyVCF_version}" == "1.0.3" ] && sed -i '/quotechar="",/d' ${PyVCF_lib}/vcf/parser.py
 ```
 <br></br>
-### Windows
+### Windows PowerShell
 #### Grab version of PyVCF3
 ``` powershell
 $PyVCF_version = (pip show PyVCF3 | Select-String '^Version:' | ForEach-Object { $_.Line.Split(' ')[1] }).Trim()
