@@ -15,16 +15,16 @@ This Github repository was created to store scripts and programs that I have wri
 #### 1) Clone Bioinformatics from github
 ```bash
 git clone https://github.com/bbaggins2005/bioinformatics.git
+cd bioinformatics 
 ```
 
 #### 2) Create Python virtual environment
 ```bash
-python -m venv /path/to/new/virtual/environment/.venv
+python -m venv .venv
 ```
 
 #### 3) Install required Python packages
 ```bash
-cd /path/to/new/virtual/environment 
 pip install -r  requirements.txt
 ```
 
