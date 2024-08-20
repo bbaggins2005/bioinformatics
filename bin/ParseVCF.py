@@ -5,12 +5,6 @@
 # Description: This program should parse an unphased VCF file and output 8 files (4 per scenario)
 # The four files will be the segregated set, non-segregated set, a missing set, and a family-missing set
 #
-'''
-Notes:
-1) quotechar error: Project Issue #6.  Reference: https://github.com/dridk/PyVCF3/issues/6
-quotechar is unused when quoting=csv.QUOTE_NONE is used. To remedy, delete passing quotechar when invoking csv.writer
-line 776 of parser.py (quotechar = "")
-'''
 
 import vcf
 import sys
