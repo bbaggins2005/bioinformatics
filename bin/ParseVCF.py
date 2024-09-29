@@ -13,9 +13,7 @@ import re
 import argparse
 
 def check_missing(samples_GT):
-    # for polyploid organisms or unique cases
-    # missingpattern = re.compile(r'^\.([/|]\.){1,2}$')
-    missingpattern = re.compile(r'^\.[/|]\.$') 
+    missingpattern = re.compile(r'^\.([/|]\.){0,1}$')
     for GT in samples_GT.values():
         if not missingpattern.search(GT):
             return False
