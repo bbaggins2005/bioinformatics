@@ -21,6 +21,7 @@ cd bioinformatics
 #### 2) Create Python virtual environment
 ```bash
 python -m venv .venv
+source .venv/bin/activate
 ```
 
 #### 3) Install required Python packages
