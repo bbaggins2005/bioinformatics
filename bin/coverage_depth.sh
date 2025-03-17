@@ -12,7 +12,7 @@ LOGDIR="log"
 
 [ -d "${OUTPUTDIR}" ] || mkdir -p ${OUTPUTDIR}
 [ -d "${LOGDIR}" ] || mkdir -p ${LOGDIR}
-OUTPUTFILE="${OUTPUTDIR}/${OUTPUTFILEPREFIX}.txt"
+OUTPUTFILE="${OUTPUTDIR}/${OUTPUTFILEPREFIX}.bed"
 LOGFILE="${LOGDIR}/coverage_depth_${OUTPUTFILEPREFIX}.log"
 echo "info: Starting bedtools for ${INPUT}" | tee -a ${LOGFILE}
 bedtools genomecov -ibam ${INPUT} -bga | grep -w "0$" > ${OUTPUTFILE}
