@@ -7,14 +7,11 @@
 #
 
 COMPRESSANDINDEX=false
-INSTALL_REQTOOLS=false
-REQTOOLS=(gawk grep)
 
 usage() {
 	printf "usage:     	$0 -i <input bed file> \n"
 	printf "		-i <input bed file> (required) \n"
 	printf "		-g <genome reference file>.  If specified, will create a filtered bed file from input bed file, composed of only chromosomes defined in genome reference file. (optional)\n"
-	printf "		-G install required tools needed for filtered bed file.  Use only with -g.  Typically used when running in a docker container (optional, default = false) \n"
 	printf "		-c compress and index output (optional, default = false) \n\n"
 	printf "1. Compress and index bed file\n"
 	printf " $ $0 -i input.bed -c  \n\n"
@@ -42,14 +39,8 @@ compressandindex() {
 	tabix -p bed ${BEDFILE}.gz
 }
 
-install_reqtools() {
-	printf "info: installing required tools such as ${TOOLS[@]}\n"
-	apt-get update
-	apt-get install "${TOOLS[@]}" -y
-}
-
 # main
-while getopts "i:g:cGh" opt; do
+while getopts "i:g:ch" opt; do
 	case ${opt} in
 		i)
 		INPUTBED=${OPTARG}
@@ -58,9 +49,6 @@ while getopts "i:g:cGh" opt; do
 		g) 
 		GENOMEFILE=${OPTARG}
 		FILTEREDBED=$(echo filtered_${INPUTBED} )
-		;;
-		G)
-		INSTALL_REQTOOLS=true
 		;;
 		c)
 		COMPRESSANDINDEX=true
@@ -82,9 +70,6 @@ shift $((OPTIND -1))
 
 check_prereq
 if [ -n "${FILTEREDBED}" ]; then
-	if [ "${INSTALL_REQTOOLS}" = true ]; then
-		install_reqtools
-	fi
 	VALID_CHR=$(awk '{print $1}' ${GENOMEFILE} )
 	printf "info: creating filtered ${INPUTBED} using ${GENOMEFILE}\n"
 	grep -wFf <(echo "${VALID_CHR}" ) ${INPUTBED} > ${FILTEREDBED}
