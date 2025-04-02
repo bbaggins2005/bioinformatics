@@ -48,7 +48,9 @@ while getopts "i:g:ch" opt; do
 		;;
 		g) 
 		GENOMEFILE=${OPTARG}
-		FILTEREDBED=$(echo filtered_${INPUTBED} )
+		BEDBASENAME=$(basename ${INPUTBED})
+		BEDDIRNAME=$(dirname ${INPUTBED})
+		FILTEREDBED=$(echo ${BEDDIRNAME}/filtered_${BEDBASENAME} )
 		;;
 		c)
 		COMPRESSANDINDEX=true
