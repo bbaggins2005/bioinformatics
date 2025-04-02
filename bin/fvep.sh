@@ -19,7 +19,6 @@ usage() {
 
 check_prereq() {
 	if [ -z "${INPUTVCF}" ] || [ -z "${FILTER}" ]; then
-		printf "${INPUTVCF} and ${FILTER}"
 		printf "Error: must specify the -i and -f switches\n\n"
 		usage
 	elif [ ! -e "${INPUTVCF}" ]; then  
