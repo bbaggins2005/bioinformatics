@@ -12,7 +12,7 @@ import glob
 from concurrent.futures import ThreadPoolExecutor
 
 chromosome = "chr1"
-parquet_dir = "tmp"
+parquet_dir = "tmp/01"
 os.makedirs(parquet_dir, exist_ok=True)
 
 def process_bed_file(file):
