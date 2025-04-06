@@ -26,4 +26,7 @@ bed_files = glob.glob("*.bed")
 with ThreadPoolExecutor(max_workers=8) as executor:
     executor.map(process_bed_file, bed_files)
 df_parquet_data = dd.read_parquet(parquet_dir + '/**/*.parquet', engine="pyarrow", recursive=True)
-print(df_parquet_data.compute())
+for partition in df_parquet_data.to_delayed():
+    pdf = partition.compute()
+    for name, chrom, start, end, depth in zip(pdf["name"], pdf["chrom"], pdf["start"], pdf["end"], pdf["depth"]):
+        print(name, chrom, start, end, depth)
