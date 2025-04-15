@@ -9,6 +9,7 @@ import dask.dataframe as dd
 import os
 import re
 import glob
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 
 chromosome = "chr1"
@@ -26,13 +27,18 @@ bed_files = glob.glob("*.bed")
 with ThreadPoolExecutor(max_workers=8) as executor:
     executor.map(process_bed_file, bed_files)
 df_parquet_data = dd.read_parquet(parquet_dir + '/**/*.parquet', engine="pyarrow", recursive=True)
-series_dict = {}
+series_dict = defaultdict(lambda: defaultdict(int))
+max_positions = defaultdict(int)
 for partition in df_parquet_data.to_delayed():
     pdf = partition.compute()
     for name, chrom, start, end, depth in zip(pdf["name"], pdf["chrom"], pdf["start"], pdf["end"], pdf["depth"]):
-        if (name, chrom) not in series_dict:
-            series_dict[(name, chrom)] = []
-        positions_count = end - start + 1
-        series_dict[(name, chrom)].extend([depth] * positions_count)
-        print(series_dict[(name,chrom)])
-        print(name, chrom, start, end, depth, "here is position count", positions_count, "for name and chrom", name, chrom, series_dict[(name,chrom)])
+        for pos in range(start, end + 1):
+            series_dict[(name, chrom)][pos] = depth
+            max_positions[(name, chrom)] = max(max_positions[(name, chrom)], pos)
+        for (name, chrom), max_pos in max_positions.items():
+            for pos in range(1, max_pos + 1):
+                if pos not in series_dict[(name, chrom)]:
+                    series_dict[(name, chrom)][pos] = 0
+for (name, chrom), depths in series_dict.items():
+    for (key, value) in sorted(depths.items()):
+        print (name, key, value)
