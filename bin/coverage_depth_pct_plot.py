@@ -6,6 +6,7 @@
 
 import matplotlib.pyplot as plt
 import dask.dataframe as dd
+import dask.array as da
 import os
 import re
 import glob
@@ -35,10 +36,23 @@ for partition in df_parquet_data.to_delayed():
         for pos in range(start, end + 1):
             series_dict[(name, chrom)][pos] = depth
             max_positions[(name, chrom)] = max(max_positions[(name, chrom)], pos)
-        for (name, chrom), max_pos in max_positions.items():
-            for pos in range(1, max_pos + 1):
-                if pos not in series_dict[(name, chrom)]:
-                    series_dict[(name, chrom)][pos] = 0
+for (name, chrom), max_pos in max_positions.items():
+    for pos in range(1, max_pos + 1):
+        if pos not in series_dict[(name, chrom)]:
+            series_dict[(name, chrom)][pos] = 0
+plot_data = {}
 for (name, chrom), depths in series_dict.items():
-    depth_series = dd.from_array(list(depths.values()))
-    depth_counts = depth_series.value_counts(normalize=True).compute().sort_index()
+    depth_array = da.from_array(list(depths.values()), chunks=len(depths))
+    depth_counts = depth_array.compute()  
+    unique, counts = da.unique(depth_array, return_counts=True)
+    depth_counts = dict(zip(unique.compute(), counts.compute()))
+    total_counts = sum(depth_counts.values())
+    depth_counts = {k: v / total_counts for k, v in depth_counts.items()}
+    sorted_depths = sorted(depth_counts.items())
+    accumulated_fraction = 0.0
+    accumulated_depth_counts = {}
+    print(name,chrom,total_counts)
+    for depth, fraction in sorted_depths:
+        accumulated_fraction += fraction
+        accumulated_depth_counts[depth] = accumulated_fraction
+        print(f"Depth: {depth}, Fraction: {fraction} Accumulated Fraction: {accumulated_fraction}")
