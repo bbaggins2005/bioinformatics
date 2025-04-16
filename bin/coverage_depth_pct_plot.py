@@ -43,7 +43,7 @@ for (name, chrom), max_pos in max_positions.items():
 plot_data = {}
 for (name, chrom), depths in series_dict.items():
     depth_array = da.from_array(list(depths.values()), chunks=len(depths))
-    depth_counts = depth_array.compute()  
+    depth_counts = depth_array.compute()
     unique, counts = da.unique(depth_array, return_counts=True)
     depth_counts = dict(zip(unique.compute(), counts.compute()))
     total_counts = sum(depth_counts.values())
@@ -51,8 +51,21 @@ for (name, chrom), depths in series_dict.items():
     sorted_depths = sorted(depth_counts.items())
     accumulated_fraction = 0.0
     accumulated_depth_counts = {}
-    print(name,chrom,total_counts)
     for depth, fraction in sorted_depths:
         accumulated_fraction += fraction
         accumulated_depth_counts[depth] = accumulated_fraction
-        print(f"Depth: {depth}, Fraction: {fraction} Accumulated Fraction: {accumulated_fraction}")
+    plot_data[(name, chrom)] = accumulated_depth_counts
+plt.figure(figsize=(10, 6))
+for (name, chrom), accumulated_depth_counts in plot_data.items():
+    depths_x = list(accumulated_depth_counts.keys())
+    fractions_y = list(accumulated_depth_counts.values())
+    for depth, fraction in accumulated_depth_counts.items():
+        print(f"Name: {name}, Chrom: {chrom}, Depth: {depth}, Accumulated Fraction: {fraction}")
+    plt.plot(depths_x, fractions_y, marker='o', linestyle='-', label=f"{name} ({chrom})")
+plt.xlabel("Coverage Depth")
+plt.ylabel("Accumulated Fraction of Observed Positions")
+plt.title("Accumulated Coverage Depth Distribution Across Chromosomes for All Samples")
+plt.legend()
+plt.grid(True)
+plt.savefig('coverage_depth.png')
+plt.close()
