@@ -40,5 +40,5 @@ for partition in df_parquet_data.to_delayed():
                 if pos not in series_dict[(name, chrom)]:
                     series_dict[(name, chrom)][pos] = 0
 for (name, chrom), depths in series_dict.items():
-    for (key, value) in sorted(depths.items()):
-        print (name, key, value)
+    depth_series = dd.from_array(list(depths.values()))
+    depth_counts = depth_series.value_counts(normalize=True).compute().sort_index()
