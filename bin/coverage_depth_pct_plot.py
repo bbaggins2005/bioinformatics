@@ -15,7 +15,6 @@ import argparse
 import itertools
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from scipy.ndimage import gaussian_filter1d
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
@@ -63,8 +62,11 @@ def plot_fraction_depth(parquet_dir, plotfilename):
     for (name, chrom), accumulated_depth_counts in plot_data.items():
         depths_x = list(accumulated_depth_counts.keys())
         fractions_y = list(accumulated_depth_counts.values())
-        smoothed_y = gaussian_filter1d(fractions_y, sigma=2)
-        plt.plot(depths_x, smoothed_y, linestyle='-', label=f"{name}")
+        plt.plot(depths_x, fractions_y, marker='o', linestyle='-', label=f"{name} ({chrom})")
+        threshold = 20
+        if args.threshold:
+            threshold = args.threshold
+        plt.axvline(x=threshold, color='red', linestyle='--', linewidth=2)
     plt.xlabel("Coverage Depth")
     plt.ylabel("Accumulated Fraction of Observed Positions")
     plt.title("Accumulated Coverage Depth Distribution for " + chrom)
@@ -105,6 +107,7 @@ if __name__ == "__main__":
     parser.add_argument("--parquetdir", type = str, required = True, help = "(required) specify directory to store intermediate data for plotting")
     parser.add_argument("--chromosome", type = str, required = False, help = "specify chromosome to filter")
     parser.add_argument("--output", type = str, required = False, help = "specify output png file name")
+    parser.add_argument("--threshold", type = int, required = False, help = "specify depth value of threshold line")
     args = parser.parse_args()
     main(args)
     sys.exit()
