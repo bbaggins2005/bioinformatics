@@ -17,18 +17,21 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from scipy.ndimage import gaussian_filter1d
 
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
 def has_subdir(dir):
     return any(os.path.isdir(os.path.join(dir, subdir)) for subdir in os.listdir(dir))
 
 def process_bed_file(file, chromosome, parquet_dir):
     df = dd.read_csv(file, sep="\t", header=None, names=["chrom", "start", "end", "depth"])
     df_chrom = df[df["chrom"] == chromosome ]
-    df_chrom["name"] = re.sub(r"\.bed$", "", file, flags=re.IGNORECASE)
+    df_chrom["name"] = re.sub(r"\.bed$", "", os.path.basename(file), flags=re.IGNORECASE)
     parquet_bed_file_dir = os.path.join(parquet_dir, f"{os.path.basename(file)}.parquet")
     df_chrom.to_parquet(parquet_bed_file_dir, engine="pyarrow", write_index=False)
 
 def plot_fraction_depth(parquet_dir, plotfilename):
-    df_parquet_data = dd.read_parquet(parquet_dir + '/**/*.parquet', engine="pyarrow", recursive=True)
+    parquet_strip_dir = parquet_dir.rstrip('/\\')
+    df_parquet_data = dd.read_parquet(parquet_strip_dir + '/**/*.parquet', engine="pyarrow", recursive=True)
     series_dict = defaultdict(lambda: defaultdict(int))
     max_positions = defaultdict(int)
     for partition in df_parquet_data.to_delayed():
@@ -61,13 +64,13 @@ def plot_fraction_depth(parquet_dir, plotfilename):
         depths_x = list(accumulated_depth_counts.keys())
         fractions_y = list(accumulated_depth_counts.values())
         smoothed_y = gaussian_filter1d(fractions_y, sigma=2)
-        plt.plot(depths_x, smoothed_y, linestyle='-', label=f"{name} ({chrom})")
+        plt.plot(depths_x, smoothed_y, linestyle='-', label=f"{name}")
     plt.xlabel("Coverage Depth")
     plt.ylabel("Accumulated Fraction of Observed Positions")
-    plt.title("Accumulated Coverage Depth Distribution for All Samples")
+    plt.title("Accumulated Coverage Depth Distribution for " + chrom)
     plt.legend()
     plt.grid(True)
-    plotfilename += '.png' 
+    plotfilename += '.png'
     plt.savefig(plotfilename)
     plt.close()
 
