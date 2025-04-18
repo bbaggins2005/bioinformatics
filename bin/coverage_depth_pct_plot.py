@@ -62,7 +62,7 @@ def plot_fraction_depth(parquet_dir, plotfilename):
     for (name, chrom), accumulated_depth_counts in plot_data.items():
         depths_x = list(accumulated_depth_counts.keys())
         fractions_y = list(accumulated_depth_counts.values())
-        plt.plot(depths_x, fractions_y, marker='o', linestyle='-', label=f"{name} ({chrom})")
+        plt.plot(depths_x, fractions_y, marker='o', linestyle='-', label=f"{name}")
         threshold = 20
         if args.threshold:
             threshold = args.threshold
