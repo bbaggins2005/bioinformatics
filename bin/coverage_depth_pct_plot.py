@@ -12,6 +12,7 @@ import re
 import glob
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from scipy.ndimage import gaussian_filter1d
 
 chromosome = "chr1"
 parquet_dir = "tmp/01"
@@ -59,9 +60,10 @@ plt.figure(figsize=(10, 6))
 for (name, chrom), accumulated_depth_counts in plot_data.items():
     depths_x = list(accumulated_depth_counts.keys())
     fractions_y = list(accumulated_depth_counts.values())
-    for depth, fraction in accumulated_depth_counts.items():
+    for depth, fraction in zip(depths_x, fractions_y):
         print(f"Name: {name}, Chrom: {chrom}, Depth: {depth}, Accumulated Fraction: {fraction}")
-    plt.plot(depths_x, fractions_y, marker='o', linestyle='-', label=f"{name} ({chrom})")
+    smoothed_y = gaussian_filter1d(fractions_y, sigma=2)
+    plt.plot(depths_x, smoothed_y, linestyle='-', label=f"{name} ({chrom})")
 plt.xlabel("Coverage Depth")
 plt.ylabel("Accumulated Fraction of Observed Positions")
 plt.title("Accumulated Coverage Depth Distribution Across Chromosomes for All Samples")
