@@ -17,6 +17,9 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from scipy.ndimage import gaussian_filter1d
 
+def has_subdir(dir):
+    return any(os.path.isdir(os.path.join(dir, subdir)) for subdir in os.listdir(dir))
+
 def process_bed_file(file, chromosome, parquet_dir):
     df = dd.read_csv(file, sep="\t", header=None, names=["chrom", "start", "end", "depth"])
     df_chrom = df[df["chrom"] == chromosome ]
@@ -45,7 +48,7 @@ def plot_fraction_depth(parquet_dir, plotfilename):
         unique, counts = da.unique(depth_array, return_counts=True)
         depth_counts = dict(zip(unique.compute(), counts.compute()))
         total_counts = sum(depth_counts.values())
-        depth_counts = {k: v / total_counts for k, v in depth_counts.items()} 
+        depth_counts = {k: v / total_counts for k, v in depth_counts.items()}
         sorted_depths = sorted(depth_counts.items())
         accumulated_fraction = 0.0
         accumulated_depth_counts = {}
@@ -61,10 +64,11 @@ def plot_fraction_depth(parquet_dir, plotfilename):
         plt.plot(depths_x, smoothed_y, linestyle='-', label=f"{name} ({chrom})")
     plt.xlabel("Coverage Depth")
     plt.ylabel("Accumulated Fraction of Observed Positions")
-    plt.title("Accumulated Coverage Depth Distribution")
+    plt.title("Accumulated Coverage Depth Distribution for All Samples")
     plt.legend()
     plt.grid(True)
-    plt.savefig('coverage_depth.png')
+    plotfilename += '.png' 
+    plt.savefig(plotfilename)
     plt.close()
 
 def main(args):
@@ -77,11 +81,19 @@ def main(args):
             print("erro: --chromosome switch is required if assessing bed file (with -i or -d switches)")
             sys.exit(11)
         else:
-            bed_files = glob.glob("*.bed")
+            if args.directory:
+                bedfiledir = args.directory + '/*.bed'
+                bed_files = glob.glob(bedfiledir)
+            elif args.input:
+                bed_files = [ args.input ] 
             with ThreadPoolExecutor(max_workers=8) as executor:
                 executor.map(process_bed_file, bed_files, itertools.repeat(args.chromosome), itertools.repeat(args.parquetdir))
     if args.output:
-        plot_fraction_depth(args.parquetdir, args.output)
+        if has_subdir(args.parquetdir):
+            plot_fraction_depth(args.parquetdir, args.output)
+        else:
+            print(f"erro: parquet directory {args.parquetdir} is empty")
+            sys.exit(12)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
