@@ -28,7 +28,7 @@ def process_bed_file(file, chromosome, parquet_dir):
     parquet_bed_file_dir = os.path.join(parquet_dir, f"{os.path.basename(file)}.parquet")
     df_chrom.to_parquet(parquet_bed_file_dir, engine="pyarrow", write_index=False)
 
-def plot_fraction_depth(parquet_dir, plotfilename):
+def plot_fraction_depth(parquet_dir, plotfilename, max_xthreshold):
     parquet_strip_dir = parquet_dir.rstrip('/\\')
     df_parquet_data = dd.read_parquet(parquet_strip_dir + '/**/*.parquet', engine="pyarrow", recursive=True)
     series_dict = defaultdict(lambda: defaultdict(int))
@@ -60,8 +60,9 @@ def plot_fraction_depth(parquet_dir, plotfilename):
         plot_data[(name, chrom)] = accumulated_depth_counts
     plt.figure(figsize=(10, 6))
     for (name, chrom), accumulated_depth_counts in plot_data.items():
-        depths_x = list(accumulated_depth_counts.keys())
-        fractions_y = list(accumulated_depth_counts.values())
+        filtered_accumulated_depth_counts = {k: v for k, v in accumulated_depth_counts.items() if k <= max_xthreshold }
+        depths_x = list(filtered_accumulated_depth_counts.keys())
+        fractions_y = list(filtered_accumulated_depth_counts.values())
         plt.plot(depths_x, fractions_y, marker='o', linestyle='-', label=f"{name}")
         threshold = 20
         if args.threshold:
@@ -95,7 +96,7 @@ def main(args):
                 executor.map(process_bed_file, bed_files, itertools.repeat(args.chromosome), itertools.repeat(args.parquetdir))
     if args.output:
         if has_subdir(args.parquetdir):
-            plot_fraction_depth(args.parquetdir, args.output)
+            plot_fraction_depth(args.parquetdir, args.output, args.xthreshold)
         else:
             print(f"erro: parquet directory {args.parquetdir} is empty")
             sys.exit(12)
@@ -108,6 +109,7 @@ if __name__ == "__main__":
     parser.add_argument("--chromosome", type = str, required = False, help = "specify chromosome to filter")
     parser.add_argument("--output", type = str, required = False, help = "specify output png file name")
     parser.add_argument("--threshold", type = int, required = False, help = "specify depth value of threshold line")
+    parser.add_argument("--xthreshold", type = int, default=0, required = False, help = "specify max depth value of threshold line")
     args = parser.parse_args()
     main(args)
     sys.exit()
