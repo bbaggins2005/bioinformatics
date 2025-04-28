@@ -28,7 +28,7 @@ def process_bed_file(file, chromosome, parquet_dir):
     parquet_bed_file_dir = os.path.join(parquet_dir, f"{os.path.basename(file)}.parquet")
     df_chrom.to_parquet(parquet_bed_file_dir, engine="pyarrow", write_index=False)
 
-def plot_fraction_depth(parquet_dir, plotfilename, max_xthreshold):
+def plot_fraction_depth(parquet_dir, plotfilename, max_xthreshold, min_y_position_threshold, max_y_position_threshold):
     parquet_strip_dir = parquet_dir.rstrip('/\\')
     df_parquet_data = dd.read_parquet(parquet_strip_dir + '/**/*.parquet', engine="pyarrow", recursive=True)
     series_dict = defaultdict(lambda: defaultdict(int))
@@ -36,11 +36,11 @@ def plot_fraction_depth(parquet_dir, plotfilename, max_xthreshold):
     for partition in df_parquet_data.to_delayed():
         pdf = partition.compute()
         for name, chrom, start, end, depth in zip(pdf["name"], pdf["chrom"], pdf["start"], pdf["end"], pdf["depth"]):
-            for pos in range(start, end + 1):
+            for pos in range(max(start, min_y_position_threshold), min(end, max_y_position_threshold) + 1):
                 series_dict[(name, chrom)][pos] = depth
                 max_positions[(name, chrom)] = max(max_positions[(name, chrom)], pos)
     for (name, chrom), max_pos in max_positions.items():
-       for pos in range(1, max_pos + 1):
+       for pos in range(max(1, min_y_position_threshold), min(end, max_y_position_threshold) + 1):
             if pos not in series_dict[(name, chrom)]:
                 series_dict[(name, chrom)][pos] = 0
     plot_data = {}
@@ -60,7 +60,10 @@ def plot_fraction_depth(parquet_dir, plotfilename, max_xthreshold):
         plot_data[(name, chrom)] = accumulated_depth_counts
     plt.figure(figsize=(10, 6))
     for (name, chrom), accumulated_depth_counts in plot_data.items():
-        filtered_accumulated_depth_counts = {k: v for k, v in accumulated_depth_counts.items() if k <= max_xthreshold }
+        if max_xthreshold > 0:
+            filtered_accumulated_depth_counts = {k: v for k, v in accumulated_depth_counts.items() if k <= max_xthreshold }
+        else:
+            filtered_accumulated_depth_counts = accumulated_depth_counts
         depths_x = list(filtered_accumulated_depth_counts.keys())
         fractions_y = list(filtered_accumulated_depth_counts.values())
         plt.plot(depths_x, fractions_y, marker='o', linestyle='-', label=f"{name}")
@@ -96,7 +99,7 @@ def main(args):
                 executor.map(process_bed_file, bed_files, itertools.repeat(args.chromosome), itertools.repeat(args.parquetdir))
     if args.output:
         if has_subdir(args.parquetdir):
-            plot_fraction_depth(args.parquetdir, args.output, args.xthreshold)
+            plot_fraction_depth(args.parquetdir, args.output, args.xthreshold, args.y_minthreshold, args.y_maxthreshold)
         else:
             print(f"erro: parquet directory {args.parquetdir} is empty")
             sys.exit(12)
@@ -110,6 +113,8 @@ if __name__ == "__main__":
     parser.add_argument("--output", type = str, required = False, help = "specify output png file name")
     parser.add_argument("--threshold", type = int, required = False, help = "specify depth value of threshold line")
     parser.add_argument("--xthreshold", type = int, default=0, required = False, help = "specify max depth value of threshold line")
+    parser.add_argument("--y_minthreshold", type = int, default=1, required = False, help = "specify max depth value of threshold line")
+    parser.add_argument("--y_maxthreshold", type = int, default=10000000, required = False, help = "specify max depth value of threshold line")
     args = parser.parse_args()
     main(args)
     sys.exit()
